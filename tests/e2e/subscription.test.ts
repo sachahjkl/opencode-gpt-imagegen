@@ -32,16 +32,18 @@ async function writeOpencodeConfig(): Promise<void> {
   await mkdir(cfgDir, { recursive: true })
   const config = {
     $schema: "https://opencode.ai/config.json",
-    plugin: [pathToFileURL(REPO_DIR).href],
+    plugins: [pathToFileURL(path.join(REPO_DIR, "dist")).href],
   }
   await writeFile(path.join(cfgDir, "opencode.jsonc"), JSON.stringify(config, null, 2))
 }
 
 async function runOpencode(prompt: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const args = ["run", prompt, "--dir", WORKDIR, "--dangerously-skip-permissions"]
+    const args = ["run", "--standalone", "--auto"]
     if (process.env.OPENCODE_MODEL) args.push("--model", process.env.OPENCODE_MODEL)
-    const proc = spawn("opencode", args, {
+    args.push(prompt)
+    const proc = spawn("opencode2", args, {
+      cwd: WORKDIR,
       stdio: "inherit",
       env: { ...process.env, XDG_CONFIG_HOME },
     })
@@ -55,11 +57,11 @@ async function runOpencode(prompt: string): Promise<void> {
     proc.on("close", (code, signal) => {
       clearTimeout(timer)
       if (signal === "SIGTERM") {
-        reject(new Error(`opencode run timed out after ${RUN_TIMEOUT_MS}ms`))
+        reject(new Error(`opencode2 run timed out after ${RUN_TIMEOUT_MS}ms`))
         return
       }
       if (code !== 0) {
-        reject(new Error(`opencode run failed (exit=${code} signal=${signal ?? "null"})`))
+        reject(new Error(`opencode2 run failed (exit=${code} signal=${signal ?? "null"})`))
         return
       }
       resolve()

@@ -81,15 +81,17 @@ describe("callViaCodexResponses", () => {
     const fetchMock = mock(async (_url: string, _init: RequestInit) => new Response(imageDoneEvent("PARSED")))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 
-    const auth = { type: "oauth", access: "tok", accountId: "acct" } as const
+    const auth = { type: "oauth", access: "tok", accountID: "acct" } as const
     const args: GenerateArgs = { prompt: "a cat", out: "cat.png", quality: "high", size: "1024x1024" }
-    const result = await callViaCodexResponses(auth, args, ["data:image/png;base64,AAA"])
+    const controller = new AbortController()
+    const result = await callViaCodexResponses(auth, args, ["data:image/png;base64,AAA"], controller.signal)
 
     expect(result).toBe("PARSED")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe("https://chatgpt.com/backend-api/codex/responses")
     expect(init.method).toBe("POST")
+    expect(init.signal).toBe(controller.signal)
 
     const headers = init.headers as Record<string, string>
     expect(headers.Authorization).toBe("Bearer tok")
@@ -117,7 +119,7 @@ describe("callViaCodexResponses", () => {
     ])
   })
 
-  test("omits optional fields when size, accountId, and reference images are absent", async () => {
+  test("omits optional fields when size, accountID, and reference images are absent", async () => {
     const fetchMock = mock(async (_url: string, _init: RequestInit) => new Response(imageDoneEvent("PARSED")))
     globalThis.fetch = fetchMock as unknown as typeof fetch
 

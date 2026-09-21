@@ -43,6 +43,7 @@ export async function callViaCodexResponses(
   auth: OpenAIAuth,
   args: GenerateArgs,
   inputImageDataUrls: string[],
+  signal?: AbortSignal,
 ): Promise<string> {
   const userContent: Array<Record<string, unknown>> = [{ type: "input_text", text: args.prompt }]
   for (const dataUrl of inputImageDataUrls) {
@@ -75,11 +76,12 @@ export async function callViaCodexResponses(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${auth.access}`,
-      ...(auth.accountId ? { "ChatGPT-Account-Id": auth.accountId } : {}),
+      ...(auth.accountID ? { "ChatGPT-Account-Id": auth.accountID } : {}),
       originator: "opencode",
       Accept: "text/event-stream",
     },
     body: JSON.stringify(body),
+    signal,
   })
   if (!res.ok || !res.body) {
     const detail = await res.text().catch(() => "")

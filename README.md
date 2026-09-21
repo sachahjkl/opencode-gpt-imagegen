@@ -4,9 +4,9 @@
 
 > Bring [**ChatGPT Images 2.0**](https://openai.com/index/introducing-chatgpt-images-2-0/) (`gpt-image-2`) to [OpenCode](https://opencode.ai). Use it through your **ChatGPT subscription** (no API costs!) or through the **OpenAI API** — your call.
 
-[![OpenCode plugin](https://img.shields.io/badge/OpenCode-plugin-blue.svg)](https://opencode.ai/docs/plugins/)
+[![OpenCode V2 plugin](https://img.shields.io/badge/OpenCode-V2_plugin-blue.svg)](https://opencode.ai/v2/docs/build/plugins)
 [![npm version](https://img.shields.io/npm/v/opencode-gpt-imagegen.svg)](https://www.npmjs.com/package/opencode-gpt-imagegen)
-[![CI](https://github.com/yuji-hatakeyama/opencode-gpt-imagegen/actions/workflows/ci.yml/badge.svg)](https://github.com/yuji-hatakeyama/opencode-gpt-imagegen/actions/workflows/ci.yml)
+[![CI](https://github.com/sachahjkl/opencode-gpt-imagegen/actions/workflows/ci.yml/badge.svg)](https://github.com/sachahjkl/opencode-gpt-imagegen/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 | Auth path | Status | Billing |
@@ -21,16 +21,35 @@
 
 ## Installation
 
-Add this plugin to your [OpenCode config](https://opencode.ai/docs/plugins/). For example, in `opencode.json`:
+This fork requires OpenCode V2.
+
+Authenticate OpenCode with a ChatGPT subscription:
+
+```sh
+opencode2 auth login openai
+```
+
+Select a ChatGPT Plus, Pro, or Business OAuth method.
+
+Clone and build this fork:
+
+```sh
+git clone https://github.com/sachahjkl/opencode-gpt-imagegen.git
+cd opencode-gpt-imagegen
+bun install --frozen-lockfile
+bun run build
+```
+
+Add the checkout to the global `opencode.json` file:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-gpt-imagegen"]
+  "plugins": ["/absolute/path/to/opencode-gpt-imagegen/dist"]
 }
 ```
 
-OpenCode auto-installs the package via Bun on next launch — no separate `npm install` step is needed. The plugin requires OpenCode to be authenticated with ChatGPT.
+See the [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins) for other plugin locations.
 
 ## Usage
 
@@ -72,7 +91,15 @@ Pass any number of image paths via the `images` argument and the model uses them
 
 ## How it works
 
-OpenCode already talks to the OpenAI Codex backend to power ChatGPT subscription chat. This plugin reuses that same endpoint, attaching the hosted `image_generation` tool to a single-turn request, then writes the returned PNG to disk. Auth is read from OpenCode's standard `auth.json`; no new credential surface is introduced.
+OpenCode uses the OpenAI Codex backend for ChatGPT subscription requests.
+
+This plugin adds the hosted `image_generation` tool to one Codex request.
+
+The plugin resolves the active OpenAI OAuth connection through the OpenCode V2 plugin context.
+
+OpenCode refreshes expired credentials before it returns them to the plugin.
+
+The plugin writes the returned PNG directly to the requested path.
 
 ## Disclaimer
 
