@@ -1,0 +1,2 @@
+name=opencode-gpt-imagegen
+description=OpenCode plugin: image generation via your ChatGPT subscription or OpenAI API
